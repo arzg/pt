@@ -18,9 +18,11 @@ fn main() -> anyhow::Result<()> {
     let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
     let lower_left_corner = origin - horizontal / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
-    let pixels: Vec<_> = (0..IMAGE_HEIGHT)
+    let image_coords = (0..IMAGE_HEIGHT)
         .rev()
-        .flat_map(|y| (0..IMAGE_WIDTH).map(move |x| (x, y)))
+        .flat_map(|y| (0..IMAGE_WIDTH).map(move |x| (x, y)));
+
+    let pixels: Vec<_> = image_coords
         .flat_map(|(x, y)| {
             let u = f32::from(x) / (f32::from(IMAGE_WIDTH) - 1.0);
             let v = f32::from(y) / (f32::from(IMAGE_HEIGHT) - 1.0);
