@@ -73,7 +73,7 @@ fn ray_color(world: &[Object], ray: &Ray, rng: &mut Rand32, depth: u16) -> Rgb {
         return Rgb::new(0.0, 0.0, 0.0);
     }
 
-    if let Some(hit_record) = hit_iter(world.iter(), ray, 0.0..f32::MAX) {
+    if let Some(hit_record) = hit_iter(world.iter(), ray, 0.0001..f32::MAX) {
         let target = hit_record.point + hit_record.normal + rand_in_unit_sphere(rng);
 
         return ray_color(
