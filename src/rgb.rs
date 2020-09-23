@@ -52,10 +52,10 @@ impl Iterator for RgbIter {
     fn next(&mut self) -> Option<Self::Item> {
         let samples = f32::from(self.samples);
         let f32_to_u8 = |f: f32| {
-            let corrected_for_samples = f / samples;
-            debug_assert!(corrected_for_samples >= 0.0 && corrected_for_samples <= 1.0);
+            let corrected = (f / samples).sqrt();
+            debug_assert!(corrected >= 0.0 && corrected <= 1.0);
 
-            (corrected_for_samples * 255.0).round() as u8
+            (corrected * 255.0).round() as u8
         };
 
         match self.idx {
