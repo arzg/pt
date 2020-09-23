@@ -20,10 +20,10 @@ fn main() -> anyhow::Result<()> {
     let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
     let lower_left_corner = origin - horizontal / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
-    let mut pixels = Vec::with_capacity(IMAGE_WIDTH as usize * IMAGE_HEIGHT as usize);
-
-    for y in (0..IMAGE_HEIGHT).rev() {
-        for x in 0..IMAGE_WIDTH {
+    let rgbs = (0..IMAGE_HEIGHT)
+        .rev()
+        .flat_map(|y| (0..IMAGE_WIDTH).map(move |x| (x, y)))
+        .map(|(x, y)| {
             let u = f32::from(x) / (f32::from(IMAGE_WIDTH) - 1.0);
             let v = f32::from(y) / (f32::from(IMAGE_HEIGHT) - 1.0);
 
@@ -31,13 +31,11 @@ fn main() -> anyhow::Result<()> {
                 origin,
                 direction: lower_left_corner + u * horizontal + v * vertical - origin,
             };
-            let pixel_color = ray_color(ray);
 
-            pixels.push(pixel_color);
-        }
-    }
+            ray_color(ray)
+        });
 
-    let u8s: Vec<_> = pixels.iter().map(|rgb| rgb.into_iter()).flatten().collect();
+    let u8s: Vec<_> = rgbs.map(|rgb| rgb.into_iter()).flatten().collect();
 
     let file = File::create("image.png")?;
     let png_encoder = PngEncoder::new(file);
