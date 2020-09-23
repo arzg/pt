@@ -3,16 +3,16 @@ use pt::camera::Camera;
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
-use pt::utils::rand_in_unit_sphere;
+use pt::utils::rand_unit_vec;
 use std::fs::File;
 use std::ops::RangeInclusive;
 use ultraviolet::Vec3;
 
 const ASPECT_RATIO: f32 = 16.0 / 9.0;
-const IMAGE_WIDTH: u16 = 400;
+const IMAGE_WIDTH: u16 = 1280;
 const IMAGE_HEIGHT: u16 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u16;
 
-const SAMPLES_PER_PIXEL: u16 = 80;
+const SAMPLES_PER_PIXEL: u16 = 100;
 const MAX_DEPTH: u16 = 50;
 
 fn main() -> anyhow::Result<()> {
@@ -74,7 +74,7 @@ fn ray_color(world: &[Object], ray: &Ray, rng: &mut Rand32, depth: u16) -> Rgb {
     }
 
     if let Some(hit_record) = hit_iter(world.iter(), ray, 0.0001..f32::MAX) {
-        let target = hit_record.point + hit_record.normal + rand_in_unit_sphere(rng);
+        let target = hit_record.point + hit_record.normal + rand_unit_vec(rng);
 
         return ray_color(
             world,
