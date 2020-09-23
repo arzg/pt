@@ -2,7 +2,7 @@ use std::ops::{Add, Mul};
 use ultraviolet::Vec3;
 
 #[derive(Debug, Copy, Clone)]
-pub struct Rgb(Vec3);
+pub struct Rgb(pub Vec3);
 
 impl Rgb {
     pub fn new(red: f32, green: f32, blue: f32) -> Self {

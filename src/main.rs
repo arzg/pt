@@ -1,3 +1,4 @@
+use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
 use std::fs::File;
@@ -23,6 +24,17 @@ fn main() -> anyhow::Result<()> {
         .rev()
         .flat_map(|y| (0..IMAGE_WIDTH).map(move |x| (x, y)));
 
+    let world = [
+        Object::Sphere(Sphere {
+            center: Vec3::new(0.0, 0.0, -1.0),
+            radius: 0.5,
+        }),
+        Object::Sphere(Sphere {
+            center: Vec3::new(0.0, -100.5, -1.0),
+            radius: 100.0,
+        }),
+    ];
+
     let pixels: Vec<_> = image_coords
         .flat_map(|(x, y)| {
             let u = f32::from(x) / (f32::from(IMAGE_WIDTH) - 1.0);
@@ -33,7 +45,7 @@ fn main() -> anyhow::Result<()> {
                 direction: lower_left_corner + u * horizontal + v * vertical - origin,
             };
 
-            ray_color(ray).into_iter()
+            ray_color(world.iter(), &ray).into_iter()
         })
         .collect();
 
@@ -54,32 +66,15 @@ fn write_image(path: &str, pixels: &[u8]) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn ray_color(ray: Ray) -> Rgb {
-    let t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray);
-
-    if let Some(t) = t {
-        let normal = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalized();
-        return Rgb::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5;
+fn ray_color<'a>(world: impl Iterator<Item = &'a Object>, ray: &Ray) -> Rgb {
+    if let Some(hit_record) = hit_iter(world, ray, 0.0..f32::MAX) {
+        return (Rgb(hit_record.normal) + Rgb::new(1.0, 1.0, 1.0)) * 0.5;
     }
 
     let unit_direction = ray.direction.normalized();
     let t = scale_to_between_zero_and_one(unit_direction.y, -1.0..1.0);
 
     linearly_interpolate(t, Rgb::new(1.0, 1.0, 1.0), Rgb::new(0.5, 0.7, 1.0))
-}
-
-fn hit_sphere(center: Vec3, radius: f32, ray: Ray) -> Option<f32> {
-    let oc = ray.origin - center;
-    let a = ray.direction.mag_sq();
-    let half_b = oc.dot(ray.direction);
-    let c = oc.mag_sq() - radius * radius;
-    let discriminant = half_b * half_b - a * c;
-
-    if discriminant < 0.0 {
-        None
-    } else {
-        Some((-half_b - discriminant.sqrt()) / a)
-    }
 }
 
 fn linearly_interpolate(t: f32, at_zero_i_want: Rgb, at_one_i_want: Rgb) -> Rgb {
