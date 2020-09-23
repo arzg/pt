@@ -3,15 +3,17 @@ use pt::camera::Camera;
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
+use pt::utils::rand_in_unit_sphere;
 use std::fs::File;
-use std::ops::Range;
+use std::ops::RangeInclusive;
 use ultraviolet::Vec3;
 
 const ASPECT_RATIO: f32 = 16.0 / 9.0;
 const IMAGE_WIDTH: u16 = 400;
 const IMAGE_HEIGHT: u16 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u16;
 
-const SAMPLES_PER_PIXEL: u16 = 200;
+const SAMPLES_PER_PIXEL: u16 = 80;
+const MAX_DEPTH: u16 = 50;
 
 fn main() -> anyhow::Result<()> {
     let camera = Camera::new(ASPECT_RATIO);
@@ -42,7 +44,7 @@ fn main() -> anyhow::Result<()> {
                 let v = (f32::from(y) + rng.rand_float()) / (f32::from(IMAGE_HEIGHT) - 1.0);
                 let ray = camera.get_ray(u, v);
 
-                pixel_color += ray_color(world.iter(), &ray);
+                pixel_color += ray_color(&world, &ray, &mut rng, MAX_DEPTH);
             }
 
             pixel_color.iter(SAMPLES_PER_PIXEL)
@@ -66,13 +68,27 @@ fn write_image(path: &str, pixels: &[u8]) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn ray_color<'a>(world: impl Iterator<Item = &'a Object>, ray: &Ray) -> Rgb {
-    if let Some(hit_record) = hit_iter(world, ray, 0.0..f32::MAX) {
-        return (Rgb(hit_record.normal) + Rgb::new(1.0, 1.0, 1.0)) * 0.5;
+fn ray_color(world: &[Object], ray: &Ray, rng: &mut Rand32, depth: u16) -> Rgb {
+    if depth == 0 {
+        return Rgb::new(0.0, 0.0, 0.0);
+    }
+
+    if let Some(hit_record) = hit_iter(world.iter(), ray, 0.0..f32::MAX) {
+        let target = hit_record.point + hit_record.normal + rand_in_unit_sphere(rng);
+
+        return ray_color(
+            world,
+            &Ray {
+                origin: hit_record.point,
+                direction: target - hit_record.point,
+            },
+            rng,
+            depth - 1,
+        ) * 0.5;
     }
 
     let unit_direction = ray.direction.normalized();
-    let t = scale_to_between_zero_and_one(unit_direction.y, -1.0..1.0);
+    let t = scale_to_between_zero_and_one(unit_direction.y, -1.0..=1.0);
 
     linearly_interpolate(t, Rgb::new(1.0, 1.0, 1.0), Rgb::new(0.5, 0.7, 1.0))
 }
@@ -81,13 +97,13 @@ fn linearly_interpolate(t: f32, at_zero_i_want: Rgb, at_one_i_want: Rgb) -> Rgb 
     at_zero_i_want * (1.0 - t) + at_one_i_want * t
 }
 
-fn scale_to_between_zero_and_one(val: f32, range: Range<f32>) -> f32 {
+fn scale_to_between_zero_and_one(val: f32, range: RangeInclusive<f32>) -> f32 {
     debug_assert!(range.contains(&val));
 
-    let (val_with_min_at_zero, max_accounting_for_min_at_zero) = if range.start < 0.0 {
-        (val - range.start, range.end - range.start)
+    let (val_with_min_at_zero, max_accounting_for_min_at_zero) = if range.start() < &0.0 {
+        (val - range.start(), range.end() - range.start())
     } else {
-        (val + range.start, range.end + range.start)
+        (val + range.start(), range.end() + range.start())
     };
 
     val_with_min_at_zero * (1.0 / max_accounting_for_min_at_zero)
