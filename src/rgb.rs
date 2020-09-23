@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul};
+use std::ops::{Add, AddAssign, Mul};
 use ultraviolet::Vec3;
 
 #[derive(Debug, Copy, Clone)]
@@ -8,16 +8,12 @@ impl Rgb {
     pub fn new(red: f32, green: f32, blue: f32) -> Self {
         Self(Vec3::new(red, green, blue))
     }
-}
 
-impl IntoIterator for Rgb {
-    type Item = u8;
-    type IntoIter = RgbIter;
-
-    fn into_iter(self) -> Self::IntoIter {
+    pub fn iter(self, samples: u16) -> RgbIter {
         RgbIter {
             inner: self,
             idx: RgbIterIdx::Red,
+            samples,
         }
     }
 }
@@ -27,6 +23,12 @@ impl Add<Self> for Rgb {
 
     fn add(self, rhs: Self) -> Self::Output {
         Self(self.0 + rhs.0)
+    }
+}
+
+impl AddAssign for Rgb {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 = self.0 + rhs.0;
     }
 }
 
@@ -41,15 +43,19 @@ impl Mul<f32> for Rgb {
 pub struct RgbIter {
     inner: Rgb,
     idx: RgbIterIdx,
+    samples: u16,
 }
 
 impl Iterator for RgbIter {
     type Item = u8;
 
     fn next(&mut self) -> Option<Self::Item> {
+        let samples = f32::from(self.samples);
         let f32_to_u8 = |f: f32| {
-            debug_assert!(f >= 0.0 && f <= 1.0);
-            (f / 1.0 * 255.0).round() as u8
+            let corrected_for_samples = f / samples;
+            debug_assert!(corrected_for_samples >= 0.0 && corrected_for_samples <= 1.0);
+
+            (corrected_for_samples * 255.0).round() as u8
         };
 
         match self.idx {

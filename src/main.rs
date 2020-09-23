@@ -1,3 +1,4 @@
+use oorandom::Rand32;
 use pt::camera::Camera;
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
@@ -9,6 +10,8 @@ use ultraviolet::Vec3;
 const ASPECT_RATIO: f32 = 16.0 / 9.0;
 const IMAGE_WIDTH: u16 = 400;
 const IMAGE_HEIGHT: u16 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u16;
+
+const SAMPLES_PER_PIXEL: u16 = 200;
 
 fn main() -> anyhow::Result<()> {
     let camera = Camera::new(ASPECT_RATIO);
@@ -24,17 +27,25 @@ fn main() -> anyhow::Result<()> {
         }),
     ];
 
+    let mut rng = Rand32::new(100);
+
     let image_coords = (0..IMAGE_HEIGHT)
         .rev()
         .flat_map(|y| (0..IMAGE_WIDTH).map(move |x| (x, y)));
 
     let pixels: Vec<_> = image_coords
         .flat_map(|(x, y)| {
-            let u = f32::from(x) / (f32::from(IMAGE_WIDTH) - 1.0);
-            let v = f32::from(y) / (f32::from(IMAGE_HEIGHT) - 1.0);
-            let ray = camera.get_ray(u, v);
+            let mut pixel_color = Rgb::new(0.0, 0.0, 0.0);
 
-            ray_color(world.iter(), &ray).into_iter()
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let u = (f32::from(x) + rng.rand_float()) / (f32::from(IMAGE_WIDTH) - 1.0);
+                let v = (f32::from(y) + rng.rand_float()) / (f32::from(IMAGE_HEIGHT) - 1.0);
+                let ray = camera.get_ray(u, v);
+
+                pixel_color += ray_color(world.iter(), &ray);
+            }
+
+            pixel_color.iter(SAMPLES_PER_PIXEL)
         })
         .collect();
 
