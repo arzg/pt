@@ -4,9 +4,9 @@ use std::fs::File;
 
 fn main() -> anyhow::Result<()> {
     let rgbs = [Rgb {
-        red: 0,
-        green: 255,
-        blue: 0,
+        red: 0.0,
+        green: 1.0,
+        blue: 0.0,
     }];
 
     let u8s: Vec<_> = rgbs.iter().map(|rgb| rgb.into_iter()).flatten().collect();
@@ -21,9 +21,9 @@ fn main() -> anyhow::Result<()> {
 
 #[derive(Copy, Clone)]
 struct Rgb {
-    red: u8,
-    green: u8,
-    blue: u8,
+    red: f32,
+    green: f32,
+    blue: f32,
 }
 
 impl IntoIterator for Rgb {
@@ -47,18 +47,23 @@ impl Iterator for RgbIter {
     type Item = u8;
 
     fn next(&mut self) -> Option<Self::Item> {
+        let f32_to_u8 = |f: f32| {
+            debug_assert!(f >= 0.0 && f <= 1.0);
+            (f / 1.0 * 255.0).round() as u8
+        };
+
         match self.idx {
             RgbIterIdx::Red => {
                 self.idx = RgbIterIdx::Green;
-                Some(self.inner.red)
+                Some(f32_to_u8(self.inner.red))
             }
             RgbIterIdx::Green => {
                 self.idx = RgbIterIdx::Blue;
-                Some(self.inner.green)
+                Some(f32_to_u8(self.inner.green))
             }
             RgbIterIdx::Blue => {
                 self.idx = RgbIterIdx::Finished;
-                Some(self.inner.blue)
+                Some(f32_to_u8(self.inner.blue))
             }
             RgbIterIdx::Finished => None,
         }
