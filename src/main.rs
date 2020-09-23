@@ -1,3 +1,4 @@
+use pt::camera::Camera;
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
@@ -9,20 +10,8 @@ const ASPECT_RATIO: f32 = 16.0 / 9.0;
 const IMAGE_WIDTH: u16 = 400;
 const IMAGE_HEIGHT: u16 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u16;
 
-const VIEWPORT_HEIGHT: f32 = 2.0;
-const VIEWPORT_WIDTH: f32 = ASPECT_RATIO * VIEWPORT_HEIGHT;
-const FOCAL_LENGTH: f32 = 1.0;
-
 fn main() -> anyhow::Result<()> {
-    let origin = Vec3::default();
-    let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
-    let lower_left_corner =
-        origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
-
-    let image_coords = (0..IMAGE_HEIGHT)
-        .rev()
-        .flat_map(|y| (0..IMAGE_WIDTH).map(move |x| (x, y)));
+    let camera = Camera::new(ASPECT_RATIO);
 
     let world = [
         Object::Sphere(Sphere {
@@ -35,15 +24,15 @@ fn main() -> anyhow::Result<()> {
         }),
     ];
 
+    let image_coords = (0..IMAGE_HEIGHT)
+        .rev()
+        .flat_map(|y| (0..IMAGE_WIDTH).map(move |x| (x, y)));
+
     let pixels: Vec<_> = image_coords
         .flat_map(|(x, y)| {
             let u = f32::from(x) / (f32::from(IMAGE_WIDTH) - 1.0);
             let v = f32::from(y) / (f32::from(IMAGE_HEIGHT) - 1.0);
-
-            let ray = Ray {
-                origin,
-                direction: lower_left_corner + u * horizontal + v * vertical - origin,
-            };
+            let ray = camera.get_ray(u, v);
 
             ray_color(world.iter(), &ray).into_iter()
         })
