@@ -1,7 +1,7 @@
 use std::ops::{Add, Mul};
 use ultraviolet::Vec3;
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct Rgb(Vec3);
 
 impl Rgb {
