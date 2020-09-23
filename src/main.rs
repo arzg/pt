@@ -5,26 +5,26 @@ use pt::rgb::Rgb;
 use std::fs::File;
 use ultraviolet::Vec3;
 
+const ASPECT_RATIO: f32 = 16.0 / 9.0;
+const IMAGE_WIDTH: u16 = 400;
+const IMAGE_HEIGHT: u16 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u16;
+
+const VIEWPORT_HEIGHT: f32 = 2.0;
+const VIEWPORT_WIDTH: f32 = ASPECT_RATIO * VIEWPORT_HEIGHT;
+const FOCAL_LENGTH: f32 = 1.0;
+
 fn main() -> anyhow::Result<()> {
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width: u16 = 400;
-    let image_height = (f32::from(image_width) / aspect_ratio) as u16;
-
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
     let origin = Vec3::default();
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner = origin - horizontal / 2.0 - Vec3::new(0.0, 0.0, focal_length);
+    let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
+    let lower_left_corner = origin - horizontal / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
-    let mut pixels = Vec::with_capacity(image_width as usize * image_height as usize);
+    let mut pixels = Vec::with_capacity(IMAGE_WIDTH as usize * IMAGE_HEIGHT as usize);
 
-    for y in (0..image_height).rev() {
-        for x in 0..image_width {
-            let u = f32::from(x) / (f32::from(image_width) - 1.0);
-            let v = f32::from(y) / (f32::from(image_height) - 1.0);
+    for y in (0..IMAGE_HEIGHT).rev() {
+        for x in 0..IMAGE_WIDTH {
+            let u = f32::from(x) / (f32::from(IMAGE_WIDTH) - 1.0);
+            let v = f32::from(y) / (f32::from(IMAGE_HEIGHT) - 1.0);
 
             let ray = Ray {
                 origin,
@@ -43,8 +43,8 @@ fn main() -> anyhow::Result<()> {
 
     png_encoder.encode(
         &u8s,
-        image_width.into(),
-        image_height.into(),
+        IMAGE_WIDTH.into(),
+        IMAGE_HEIGHT.into(),
         ColorType::Rgb8,
     )?;
 
