@@ -3,6 +3,7 @@ use image::ColorType;
 use pt::ray::Ray;
 use pt::rgb::Rgb;
 use std::fs::File;
+use std::ops::Range;
 use ultraviolet::Vec3;
 
 const ASPECT_RATIO: f32 = 16.0 / 9.0;
@@ -53,7 +54,23 @@ fn main() -> anyhow::Result<()> {
 
 fn ray_color(ray: Ray) -> Rgb {
     let unit_direction = ray.direction.normalized();
-    let t = 0.5 * (unit_direction.y + 1.0);
+    let t = scale_to_between_zero_and_one(unit_direction.y, -1.0..1.0);
 
-    Rgb::new(1.0, 1.0, 1.0) * (1.0 - t) + Rgb::new(0.5, 0.7, 1.0) * t
+    linearly_interpolate(t, Rgb::new(1.0, 1.0, 1.0), Rgb::new(0.5, 0.7, 1.0))
+}
+
+fn linearly_interpolate(t: f32, at_zero_i_want: Rgb, at_one_i_want: Rgb) -> Rgb {
+    at_zero_i_want * (1.0 - t) + at_one_i_want * t
+}
+
+fn scale_to_between_zero_and_one(val: f32, range: Range<f32>) -> f32 {
+    debug_assert!(range.contains(&val));
+
+    let (val_with_min_at_zero, max_accounting_for_min_at_zero) = if range.start < 0.0 {
+        (val - range.start, range.end - range.start)
+    } else {
+        (val + range.start, range.end + range.start)
+    };
+
+    val_with_min_at_zero * (1.0 / max_accounting_for_min_at_zero)
 }
