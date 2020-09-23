@@ -9,4 +9,4 @@ version = "0.1.0"
 [dependencies]
 anyhow = "1.0.32"
 png = "0.16.7"
-ultraviolet = "0.6.1"
+ultraviolet = "0.7.0"

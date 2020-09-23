@@ -96,9 +96,9 @@ dependencies = [
 
 [[package]]
 name = "ultraviolet"
-version = "0.6.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad1fece4dbee533fd94cb9905aeb50e8733e2a177347330386def9f5ea1b36ec"
+checksum = "89b2889a8e8f24a6f0485c983101e7f46f032cb2726facbe462c6ff3466fde6b"
 dependencies = [
  "wide",
 ]
