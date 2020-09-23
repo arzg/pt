@@ -55,8 +55,11 @@ fn write_image(path: &str, pixels: &[u8]) -> anyhow::Result<()> {
 }
 
 fn ray_color(ray: Ray) -> Rgb {
-    if did_hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Rgb::new(1.0, 0.0, 0.0);
+    let t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray);
+
+    if let Some(t) = t {
+        let normal = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalized();
+        return Rgb::new(normal.x + 1.0, normal.y + 1.0, normal.z + 1.0) * 0.5;
     }
 
     let unit_direction = ray.direction.normalized();
@@ -65,14 +68,18 @@ fn ray_color(ray: Ray) -> Rgb {
     linearly_interpolate(t, Rgb::new(1.0, 1.0, 1.0), Rgb::new(0.5, 0.7, 1.0))
 }
 
-fn did_hit_sphere(center: Vec3, radius: f32, ray: Ray) -> bool {
+fn hit_sphere(center: Vec3, radius: f32, ray: Ray) -> Option<f32> {
     let oc = ray.origin - center;
     let a = ray.direction.dot(ray.direction);
     let b = 2.0 * oc.dot(ray.direction);
     let c = oc.dot(oc) - radius * radius;
     let discriminant = b * b - 4.0 * a * c;
 
-    discriminant > 0.0
+    if discriminant < 0.0 {
+        None
+    } else {
+        Some((-b - discriminant.sqrt()) / (2.0 * a))
+    }
 }
 
 fn linearly_interpolate(t: f32, at_zero_i_want: Rgb, at_one_i_want: Rgb) -> Rgb {
