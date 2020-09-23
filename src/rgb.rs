@@ -1,8 +1,17 @@
+use std::ops::{Add, Mul};
+use ultraviolet::Vec3;
+
 #[derive(Copy, Clone)]
-pub struct Rgb {
-    pub red: f32,
-    pub green: f32,
-    pub blue: f32,
+pub struct Rgb(Vec3);
+
+impl Rgb {
+    pub fn new(red: f32, green: f32, blue: f32) -> Self {
+        Self(Vec3 {
+            x: red,
+            y: green,
+            z: blue,
+        })
+    }
 }
 
 impl IntoIterator for Rgb {
@@ -14,6 +23,22 @@ impl IntoIterator for Rgb {
             inner: self,
             idx: RgbIterIdx::Red,
         }
+    }
+}
+
+impl Add<Self> for Rgb {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self(self.0 + rhs.0)
+    }
+}
+
+impl Mul<f32> for Rgb {
+    type Output = Self;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        Self(self.0 * rhs)
     }
 }
 
@@ -34,15 +59,15 @@ impl Iterator for RgbIter {
         match self.idx {
             RgbIterIdx::Red => {
                 self.idx = RgbIterIdx::Green;
-                Some(f32_to_u8(self.inner.red))
+                Some(f32_to_u8(self.inner.0.x))
             }
             RgbIterIdx::Green => {
                 self.idx = RgbIterIdx::Blue;
-                Some(f32_to_u8(self.inner.green))
+                Some(f32_to_u8(self.inner.0.y))
             }
             RgbIterIdx::Blue => {
                 self.idx = RgbIterIdx::Finished;
-                Some(f32_to_u8(self.inner.blue))
+                Some(f32_to_u8(self.inner.0.z))
             }
             RgbIterIdx::Finished => None,
         }
