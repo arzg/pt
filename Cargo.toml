@@ -8,5 +8,5 @@ version = "0.1.0"
 
 [dependencies]
 anyhow = "1.0.32"
-image = "0.23.9"
+png = "0.16.7"
 ultraviolet = "0.6.1"

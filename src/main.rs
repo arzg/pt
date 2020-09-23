@@ -1,5 +1,3 @@
-use image::png::PngEncoder;
-use image::ColorType;
 use pt::ray::Ray;
 use pt::rgb::Rgb;
 use std::fs::File;
@@ -36,15 +34,19 @@ fn main() -> anyhow::Result<()> {
         })
         .collect();
 
-    let file = File::create("image.png")?;
-    let png_encoder = PngEncoder::new(file);
+    write_image("image.png", &pixels)?;
 
-    png_encoder.encode(
-        &pixels,
-        IMAGE_WIDTH.into(),
-        IMAGE_HEIGHT.into(),
-        ColorType::Rgb8,
-    )?;
+    Ok(())
+}
+
+fn write_image(path: &str, pixels: &[u8]) -> anyhow::Result<()> {
+    let file = File::create(path)?;
+    let mut png_encoder = png::Encoder::new(file, IMAGE_WIDTH.into(), IMAGE_HEIGHT.into());
+    png_encoder.set_color(png::ColorType::RGB);
+    png_encoder.set_depth(png::BitDepth::Eight);
+
+    let mut png_writer = png_encoder.write_header()?;
+    png_writer.write_image_data(&pixels)?;
 
     Ok(())
 }
