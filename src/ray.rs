@@ -1,8 +1,8 @@
 use ultraviolet::Vec3;
 
-struct Ray {
-    origin: Vec3,
-    direction: Vec3,
+pub struct Ray {
+    pub origin: Vec3,
+    pub direction: Vec3,
 }
 
 impl Ray {
