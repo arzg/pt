@@ -6,11 +6,7 @@ pub struct Rgb(Vec3);
 
 impl Rgb {
     pub fn new(red: f32, green: f32, blue: f32) -> Self {
-        Self(Vec3 {
-            x: red,
-            y: green,
-            z: blue,
-        })
+        Self(Vec3::new(red, green, blue))
     }
 }
 
