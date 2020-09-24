@@ -1,9 +1,9 @@
 use oorandom::Rand32;
 use pt::camera::Camera;
+use pt::material::{Lambertian, Material};
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
-use pt::utils::rand_unit_vec;
 use std::fs::File;
 use std::ops::RangeInclusive;
 use ultraviolet::Vec3;
@@ -22,10 +22,16 @@ fn main() -> anyhow::Result<()> {
         Object::Sphere(Sphere {
             center: Vec3::new(0.0, 0.0, -1.0),
             radius: 0.5,
+            material: Material::Lambertian(Lambertian {
+                albedo: Rgb::new(0.5, 0.5, 0.5),
+            }),
         }),
         Object::Sphere(Sphere {
             center: Vec3::new(0.0, -100.5, -1.0),
             radius: 100.0,
+            material: Material::Lambertian(Lambertian {
+                albedo: Rgb::new(0.5, 0.5, 0.5),
+            }),
         }),
     ];
 
@@ -74,23 +80,17 @@ fn ray_color(world: &[Object], ray: &Ray, rng: &mut Rand32, depth: u16) -> Rgb {
     }
 
     if let Some(hit_record) = hit_iter(world.iter(), ray, 0.0001..f32::MAX) {
-        let target = hit_record.point + hit_record.normal + rand_unit_vec(rng);
+        if let Some((attenuation, ray)) = hit_record.material.scatter(ray, &hit_record, rng) {
+            attenuation * ray_color(world, &ray, rng, depth - 1)
+        } else {
+            Rgb::new(0.0, 0.0, 0.0)
+        }
+    } else {
+        let unit_direction = ray.direction.normalized();
+        let t = scale_to_between_zero_and_one(unit_direction.y, -1.0..=1.0);
 
-        return ray_color(
-            world,
-            &Ray {
-                origin: hit_record.point,
-                direction: target - hit_record.point,
-            },
-            rng,
-            depth - 1,
-        ) * 0.5;
+        linearly_interpolate(t, Rgb::new(1.0, 1.0, 1.0), Rgb::new(0.5, 0.7, 1.0))
     }
-
-    let unit_direction = ray.direction.normalized();
-    let t = scale_to_between_zero_and_one(unit_direction.y, -1.0..=1.0);
-
-    linearly_interpolate(t, Rgb::new(1.0, 1.0, 1.0), Rgb::new(0.5, 0.7, 1.0))
 }
 
 fn linearly_interpolate(t: f32, at_zero_i_want: Rgb, at_one_i_want: Rgb) -> Rgb {

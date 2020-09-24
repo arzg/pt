@@ -1,6 +1,7 @@
 mod sphere;
 pub use sphere::Sphere;
 
+use crate::material::Material;
 use crate::ray::Ray;
 use std::ops::Range;
 use ultraviolet::Vec3;
@@ -21,7 +22,7 @@ pub fn hit_iter<'o>(
     objects: impl Iterator<Item = &'o Object>,
     ray: &Ray,
     t_range: Range<f32>,
-) -> Option<HitRecord> {
+) -> Option<HitRecord<'o>> {
     let mut hit_record = None;
     let mut closest_so_far = t_range.end;
 
@@ -35,8 +36,9 @@ pub fn hit_iter<'o>(
     hit_record
 }
 
-pub struct HitRecord {
+pub struct HitRecord<'m> {
     pub point: Vec3,
     pub normal: Vec3,
     pub t: f32,
+    pub material: &'m Material,
 }

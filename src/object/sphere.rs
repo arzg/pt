@@ -1,4 +1,5 @@
 use super::HitRecord;
+use crate::material::Material;
 use crate::ray::Ray;
 use std::ops::Range;
 use ultraviolet::Vec3;
@@ -6,6 +7,7 @@ use ultraviolet::Vec3;
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
+    pub material: Material,
 }
 
 impl Sphere {
@@ -26,6 +28,7 @@ impl Sphere {
                     t,
                     point,
                     normal: (point - self.center) / self.radius,
+                    material: &self.material,
                 });
             }
 
@@ -36,6 +39,7 @@ impl Sphere {
                     t,
                     point,
                     normal: (point - self.center) / self.radius,
+                    material: &self.material,
                 });
             }
         }
