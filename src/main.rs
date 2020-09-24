@@ -1,6 +1,6 @@
 use oorandom::Rand32;
 use pt::camera::Camera;
-use pt::material::{Lambertian, Material};
+use pt::material::{Lambertian, Material, Metal};
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
@@ -20,17 +20,31 @@ fn main() -> anyhow::Result<()> {
 
     let world = [
         Object::Sphere(Sphere {
-            center: Vec3::new(0.0, 0.0, -1.0),
-            radius: 0.5,
-            material: Material::Lambertian(Lambertian {
-                albedo: Rgb::new(0.5, 0.5, 0.5),
-            }),
-        }),
-        Object::Sphere(Sphere {
             center: Vec3::new(0.0, -100.5, -1.0),
             radius: 100.0,
             material: Material::Lambertian(Lambertian {
-                albedo: Rgb::new(0.5, 0.5, 0.5),
+                albedo: Rgb::new(0.8, 0.8, 0.0),
+            }),
+        }),
+        Object::Sphere(Sphere {
+            center: Vec3::new(0.0, 0.0, -1.0),
+            radius: 0.5,
+            material: Material::Lambertian(Lambertian {
+                albedo: Rgb::new(0.7, 0.3, 0.3),
+            }),
+        }),
+        Object::Sphere(Sphere {
+            center: Vec3::new(-1.0, 0.0, -1.0),
+            radius: 0.5,
+            material: Material::Metal(Metal {
+                albedo: Rgb::new(0.8, 0.8, 0.8),
+            }),
+        }),
+        Object::Sphere(Sphere {
+            center: Vec3::new(1.0, 0.0, -1.0),
+            radius: 0.5,
+            material: Material::Metal(Metal {
+                albedo: Rgb::new(0.8, 0.6, 0.2),
             }),
         }),
     ];
