@@ -10,7 +10,7 @@ version = "0.1.0"
 anyhow = "1.0.32"
 oorandom = "11"
 png = "0.16.7"
-ultraviolet = "0.7.0"
+ultraviolet = "0.7.1"
 
 [profile.dev]
 opt-level = 3
