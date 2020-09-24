@@ -4,6 +4,7 @@ use pt::material::{Lambertian, Material, Metal};
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
+use rayon::prelude::*;
 use std::fs::File;
 use std::ops::RangeInclusive;
 use ultraviolet::Vec3;
@@ -49,14 +50,15 @@ fn main() -> anyhow::Result<()> {
         }),
     ];
 
-    let mut rng = Rand32::new(100);
-
     let image_coords = (0..IMAGE_HEIGHT)
+        .into_par_iter()
         .rev()
-        .flat_map(|y| (0..IMAGE_WIDTH).map(move |x| (x, y)));
+        .flat_map(|y| (0..IMAGE_WIDTH).into_par_iter().map(move |x| (x, y)));
 
     let pixels: Vec<_> = image_coords
-        .flat_map(|(x, y)| {
+        .map(|(x, y)| {
+            let mut rng = Rand32::new(100);
+
             let mut pixel_color = Rgb::new(0.0, 0.0, 0.0);
 
             for _ in 0..SAMPLES_PER_PIXEL {
@@ -67,11 +69,16 @@ fn main() -> anyhow::Result<()> {
                 pixel_color += ray_color(&world, &ray, &mut rng, MAX_DEPTH);
             }
 
-            pixel_color.iter(SAMPLES_PER_PIXEL)
+            pixel_color
         })
         .collect();
 
-    write_image("image.png", &pixels)?;
+    let u8s: Vec<_> = pixels
+        .iter()
+        .flat_map(|rgb| rgb.iter(SAMPLES_PER_PIXEL))
+        .collect();
+
+    write_image("image.png", &u8s)?;
 
     Ok(())
 }
