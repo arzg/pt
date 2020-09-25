@@ -1,9 +1,9 @@
-use oorandom::Rand32;
 use pt::camera::Camera;
 use pt::material::{Lambertian, Material, Metal};
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
+use rand::Rng;
 use rayon::prelude::*;
 use std::fs::File;
 use std::ops::RangeInclusive;
@@ -59,13 +59,13 @@ fn main() -> anyhow::Result<()> {
 
     let pixels: Vec<_> = image_coords
         .map(|(x, y)| {
-            let mut rng = Rand32::new(100);
+            let mut rng = rand::thread_rng();
 
             let mut pixel_color = Rgb::new(0.0, 0.0, 0.0);
 
             for _ in 0..SAMPLES_PER_PIXEL {
-                let u = (f32::from(x) + rng.rand_float()) / (f32::from(IMAGE_WIDTH) - 1.0);
-                let v = (f32::from(y) + rng.rand_float()) / (f32::from(IMAGE_HEIGHT) - 1.0);
+                let u = (f32::from(x) + rng.gen::<f32>()) / (f32::from(IMAGE_WIDTH) - 1.0);
+                let v = (f32::from(y) + rng.gen::<f32>()) / (f32::from(IMAGE_HEIGHT) - 1.0);
                 let ray = camera.get_ray(u, v);
 
                 pixel_color += ray_color(&world, &ray, &mut rng, MAX_DEPTH);
@@ -97,7 +97,7 @@ fn write_image(path: &str, pixels: &[u8]) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn ray_color(world: &[Object], ray: &Ray, rng: &mut Rand32, depth: u16) -> Rgb {
+fn ray_color(world: &[Object], ray: &Ray, rng: &mut impl Rng, depth: u16) -> Rgb {
     if depth == 0 {
         return Rgb::new(0.0, 0.0, 0.0);
     }

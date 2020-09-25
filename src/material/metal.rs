@@ -2,7 +2,7 @@ use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::rgb::Rgb;
 use crate::utils;
-use oorandom::Rand32;
+use rand::Rng;
 
 pub struct Metal {
     pub albedo: Rgb,
@@ -14,7 +14,7 @@ impl Metal {
         &self,
         ray: &Ray,
         hit_record: &HitRecord,
-        rng: &mut Rand32,
+        rng: &mut impl Rng,
     ) -> Option<(Rgb, Ray)> {
         let reflected = ray.direction.normalized().reflected(hit_record.normal);
         let scattered = Ray {

@@ -6,7 +6,7 @@ pub use metal::Metal;
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::rgb::Rgb;
-use oorandom::Rand32;
+use rand::Rng;
 
 pub enum Material {
     Lambertian(Lambertian),
@@ -18,7 +18,7 @@ impl Material {
         &self,
         ray: &Ray,
         hit_record: &HitRecord,
-        rng: &mut Rand32,
+        rng: &mut impl Rng,
     ) -> Option<(Rgb, Ray)> {
         match self {
             Self::Lambertian(lambertian) => Some(lambertian.scatter(hit_record, rng)),
