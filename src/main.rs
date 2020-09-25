@@ -39,6 +39,7 @@ fn main() -> anyhow::Result<()> {
             radius: 0.5,
             material: Material::Metal(Metal {
                 albedo: Rgb::new(0.8, 0.8, 0.8),
+                fuzz: 0.3,
             }),
         }),
         Object::Sphere(Sphere {
@@ -46,6 +47,7 @@ fn main() -> anyhow::Result<()> {
             radius: 0.5,
             material: Material::Metal(Metal {
                 albedo: Rgb::new(0.8, 0.6, 0.2),
+                fuzz: 1.0,
             }),
         }),
     ];

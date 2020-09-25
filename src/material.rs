@@ -22,7 +22,7 @@ impl Material {
     ) -> Option<(Rgb, Ray)> {
         match self {
             Self::Lambertian(lambertian) => Some(lambertian.scatter(hit_record, rng)),
-            Self::Metal(metal) => metal.scatter(ray, hit_record),
+            Self::Metal(metal) => metal.scatter(ray, hit_record, rng),
         }
     }
 }
