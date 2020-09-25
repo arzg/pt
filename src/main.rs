@@ -17,13 +17,21 @@ const SAMPLES_PER_PIXEL: u16 = 100;
 const MAX_DEPTH: u16 = 50;
 
 fn main() -> anyhow::Result<()> {
-    let camera = Camera::new(
-        Vec3::new(0.0, 0.0, 4.0),
-        Vec3::new(0.0, 0.0, 0.0),
-        Vec3::new(0.0, 1.0, 0.0),
-        30.0,
-        ASPECT_RATIO,
-    );
+    let camera = {
+        let look_from = Vec3::new(0.0, 0.0, 4.0);
+        let look_at = Vec3::new(0.0, 0.0, -1.0);
+        let focus_distance = (look_from - look_at).mag();
+
+        Camera::new(
+            look_from,
+            look_at,
+            Vec3::new(0.0, 1.0, 0.0),
+            30.0,
+            ASPECT_RATIO,
+            1.0,
+            focus_distance,
+        )
+    };
 
     let world = [
         Object::Sphere(Sphere {
@@ -71,7 +79,7 @@ fn main() -> anyhow::Result<()> {
             for _ in 0..SAMPLES_PER_PIXEL {
                 let u = (f32::from(x) + rng.gen::<f32>()) / (f32::from(IMAGE_WIDTH) - 1.0);
                 let v = (f32::from(y) + rng.gen::<f32>()) / (f32::from(IMAGE_HEIGHT) - 1.0);
-                let ray = camera.get_ray(u, v);
+                let ray = camera.get_ray(u, v, &mut rng);
 
                 pixel_color += ray_color(&world, &ray, &mut rng, MAX_DEPTH);
             }
