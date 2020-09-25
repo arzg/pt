@@ -24,23 +24,25 @@ impl Sphere {
             let t = (-half_b - root) / a;
             if t_range.contains(&t) {
                 let point = ray.at(t);
-                return Some(HitRecord {
-                    t,
+                return Some(HitRecord::new(
+                    ray,
                     point,
-                    normal: (point - self.center) / self.radius,
-                    material: &self.material,
-                });
+                    (point - self.center) / self.radius,
+                    t,
+                    &self.material,
+                ));
             }
 
             let t = (-half_b + root) / a;
             if t_range.contains(&t) {
                 let point = ray.at(t);
-                return Some(HitRecord {
-                    t,
+                return Some(HitRecord::new(
+                    ray,
                     point,
-                    normal: (point - self.center) / self.radius,
-                    material: &self.material,
-                });
+                    (point - self.center) / self.radius,
+                    t,
+                    &self.material,
+                ));
             }
         }
 
