@@ -24,7 +24,7 @@ fn main() -> anyhow::Result<()> {
             center: Vec3::new(0.0, -100.5, -1.0),
             radius: 100.0,
             material: Material::Lambertian(Lambertian {
-                albedo: Rgb::new(0.8, 0.8, 0.0),
+                albedo: Rgb::new(0.8, 0.8, 0.9),
             }),
         }),
         Object::Sphere(Sphere {
