@@ -17,7 +17,7 @@ const SAMPLES_PER_PIXEL: u16 = 100;
 const MAX_DEPTH: u16 = 50;
 
 fn main() -> anyhow::Result<()> {
-    let camera = Camera::new(ASPECT_RATIO);
+    let camera = Camera::new(30.0, ASPECT_RATIO);
 
     let world = [
         Object::Sphere(Sphere {
