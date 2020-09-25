@@ -1,5 +1,5 @@
 use pt::camera::Camera;
-use pt::material::{Lambertian, Material, Metal};
+use pt::material::{Dielectric, Lambertian, Material, Metal};
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
@@ -45,9 +45,8 @@ fn main() -> anyhow::Result<()> {
         Object::Sphere(Sphere {
             center: Vec3::new(1.0, 0.0, -1.0),
             radius: 0.5,
-            material: Material::Metal(Metal {
-                albedo: Rgb::new(0.8, 0.6, 0.2),
-                fuzz: 1.0,
+            material: Material::Dielectric(Dielectric {
+                refractive_idx: 1.5,
             }),
         }),
     ];
