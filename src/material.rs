@@ -1,5 +1,7 @@
+mod dielectric;
 mod lambertian;
 mod metal;
+pub use dielectric::Dielectric;
 pub use lambertian::Lambertian;
 pub use metal::Metal;
 
@@ -11,6 +13,7 @@ use rand::Rng;
 pub enum Material {
     Lambertian(Lambertian),
     Metal(Metal),
+    Dielectric(Dielectric),
 }
 
 impl Material {
@@ -23,6 +26,7 @@ impl Material {
         match self {
             Self::Lambertian(lambertian) => Some(lambertian.scatter(hit_record, rng)),
             Self::Metal(metal) => metal.scatter(ray, hit_record, rng),
+            Self::Dielectric(dielectric) => Some(dielectric.scatter(ray, hit_record, rng)),
         }
     }
 }
