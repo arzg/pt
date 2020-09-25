@@ -64,6 +64,27 @@ fn main() -> anyhow::Result<()> {
                 refractive_idx: 1.5,
             }),
         }),
+        Object::Sphere(Sphere {
+            center: Vec3::new(0.0, 0.8, -1.0),
+            radius: 0.1,
+            material: Material::DiffuseLight(DiffuseLight {
+                emission: Rgb::new(100.0, 100.0, 100.0),
+            }),
+        }),
+        Object::Sphere(Sphere {
+            center: Vec3::new(1.6, 0.3, -1.0),
+            radius: 0.1,
+            material: Material::DiffuseLight(DiffuseLight {
+                emission: Rgb::new(100.0, 100.0, 100.0),
+            }),
+        }),
+        Object::Sphere(Sphere {
+            center: Vec3::new(-4.0, 1.0, 2.0),
+            radius: 0.5,
+            material: Material::DiffuseLight(DiffuseLight {
+                emission: Rgb::new(60.0, 60.0, 60.0),
+            }),
+        }),
     ];
 
     let image_coords = (0..IMAGE_HEIGHT)
