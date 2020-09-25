@@ -1,12 +1,13 @@
 use pt::camera::Camera;
-use pt::material::{Dielectric, Lambertian, Material, Metal};
+use pt::material::{
+    Dielectric, DiffuseLight, HandleResult, Lambertian, Material, Metal, Scattered,
+};
 use pt::object::{hit_iter, Object, Sphere};
 use pt::ray::Ray;
 use pt::rgb::Rgb;
 use rand::Rng;
 use rayon::prelude::*;
 use std::fs::File;
-use std::ops::RangeInclusive;
 use ultraviolet::Vec3;
 
 const ASPECT_RATIO: f32 = 16.0 / 9.0;
@@ -81,7 +82,8 @@ fn main() -> anyhow::Result<()> {
                 let v = (f32::from(y) + rng.gen::<f32>()) / (f32::from(IMAGE_HEIGHT) - 1.0);
                 let ray = camera.get_ray(u, v, &mut rng);
 
-                pixel_color += ray_color(&world, &ray, &mut rng, MAX_DEPTH);
+                pixel_color +=
+                    ray_color(&world, &ray, Rgb::new(0.0, 0.0, 0.0), &mut rng, MAX_DEPTH);
             }
 
             pixel_color
@@ -110,37 +112,21 @@ fn write_image(path: &str, pixels: &[u8]) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn ray_color(world: &[Object], ray: &Ray, rng: &mut impl Rng, depth: u16) -> Rgb {
+fn ray_color(world: &[Object], ray: &Ray, background: Rgb, rng: &mut impl Rng, depth: u16) -> Rgb {
     if depth == 0 {
         return Rgb::new(0.0, 0.0, 0.0);
     }
 
     if let Some(hit_record) = hit_iter(world.iter(), ray, 0.0001..f32::MAX) {
-        if let Some((attenuation, ray)) = hit_record.material.scatter(ray, &hit_record, rng) {
-            attenuation * ray_color(world, &ray, rng, depth - 1)
-        } else {
-            Rgb::new(0.0, 0.0, 0.0)
+        match hit_record.material.handle_ray(ray, &hit_record, rng) {
+            HandleResult::Scattered(Some(Scattered {
+                attenuation,
+                ray: scattered,
+            })) => attenuation * ray_color(world, &scattered, background, rng, depth - 1),
+            HandleResult::Scattered(None) => background,
+            HandleResult::Emitted { color } => color,
         }
     } else {
-        let unit_direction = ray.direction.normalized();
-        let t = scale_to_between_zero_and_one(unit_direction.y, -1.0..=1.0);
-
-        linearly_interpolate(t, Rgb::new(1.0, 1.0, 1.0), Rgb::new(0.5, 0.7, 1.0))
-    }
+        background
 }
-
-fn linearly_interpolate(t: f32, at_zero_i_want: Rgb, at_one_i_want: Rgb) -> Rgb {
-    at_zero_i_want * (1.0 - t) + at_one_i_want * t
-}
-
-fn scale_to_between_zero_and_one(val: f32, range: RangeInclusive<f32>) -> f32 {
-    debug_assert!(range.contains(&val));
-
-    let (val_with_min_at_zero, max_accounting_for_min_at_zero) = if range.start() < &0.0 {
-        (val - range.start(), range.end() - range.start())
-    } else {
-        (val + range.start(), range.end() + range.start())
-    };
-
-    val_with_min_at_zero * (1.0 / max_accounting_for_min_at_zero)
 }

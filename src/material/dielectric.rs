@@ -1,3 +1,4 @@
+use super::Scattered;
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::rgb::Rgb;
@@ -14,7 +15,7 @@ impl Dielectric {
         ray: &Ray,
         hit_record: &HitRecord,
         rng: &mut impl Rng,
-    ) -> (Rgb, Ray) {
+    ) -> Scattered {
         let etai_over_etat = if hit_record.front_face {
             1.0 / self.refractive_idx
         } else {
@@ -38,13 +39,13 @@ impl Dielectric {
             refract(unit_direction, hit_record.normal, etai_over_etat)
         };
 
-        (
-            Rgb::new(1.0, 1.0, 1.0),
-            Ray {
+        Scattered {
+            attenuation: Rgb::new(1.0, 1.0, 1.0),
+            ray: Ray {
                 origin: hit_record.point,
                 direction,
             },
-        )
+        }
     }
 }
 

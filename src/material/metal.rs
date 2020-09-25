@@ -1,3 +1,4 @@
+use super::Scattered;
 use crate::object::HitRecord;
 use crate::ray::Ray;
 use crate::rgb::Rgb;
@@ -15,7 +16,7 @@ impl Metal {
         ray: &Ray,
         hit_record: &HitRecord,
         rng: &mut impl Rng,
-    ) -> Option<(Rgb, Ray)> {
+    ) -> Option<Scattered> {
         let reflected = ray.direction.normalized().reflected(hit_record.normal);
         let scattered = Ray {
             origin: hit_record.point,
@@ -23,7 +24,10 @@ impl Metal {
         };
 
         if scattered.direction.dot(hit_record.normal) > 0.0 {
-            Some((self.albedo, scattered))
+            Some(Scattered {
+                attenuation: self.albedo,
+                ray: scattered,
+            })
         } else {
             None
         }
