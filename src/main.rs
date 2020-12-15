@@ -13,10 +13,10 @@ use std::thread;
 use ultraviolet::Vec3;
 
 const ASPECT_RATIO: f32 = 16.0 / 9.0;
-const IMAGE_WIDTH: u16 = 1280;
+const IMAGE_WIDTH: u16 = 3840;
 const IMAGE_HEIGHT: u16 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as u16;
 
-const SAMPLES_PER_PIXEL: u16 = 100;
+const SAMPLES_PER_PIXEL: u16 = 10_000;
 const MAX_DEPTH: u16 = 50;
 
 fn main() -> anyhow::Result<()> {
